@@ -1,0 +1,17 @@
+{
+  "short_name": "Laci",
+  "name": "Laci",
+  "description": "'Money in the Box' Manager.",
+  "icons": [
+    {
+      "src": "./src/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/laci",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#E808C4"
+}

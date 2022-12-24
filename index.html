@@ -1,0 +1,184 @@
+<html>
+  <head>
+    <title>Laci</title>
+    <meta name="description" content="Convert Your List to 'Check-able' List." />
+    <meta charset="UTF-8" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              laci: "#E808C4",
+              blek: "#4B003F"
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet" /> -->
+    <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="icon" sizes="512x512" href="./src/icon-512x512.png" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" sizes="512x512" href="./src/icon-512x512.png" />
+    <style>
+      * {
+        font-family: "Martian Mono", Tahoma, Geneva, Verdana, sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"] {
+        -webkit-appearance: none;
+        margin: 0;
+        -moz-appearance: textfield !important;
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen flex flex-col" x-data="app" x-init="retrieveLaci()">
+    <header class="flex place-content-between items-center">
+      <div class="flex pl-3 items-center gap-1">
+        <img class="w-14" src="./src/logo.svg" alt="logo" />
+        <p class="text-xl font-bold text-blek">Laci</p>
+      </div>
+      <div class="flex mr-3">
+        <button class="rounded px-3 mr-3 active:scale-90" :class="hitungMode ? 'text-white bg-laci' : 'text-laci bg-white ring-2 ring-laci ring-inset'" @click="hitungMode = !hitungMode">hitung</button>
+        <button class="active:scale-90"><img class="w-8 h-8" src="./src/icon-menu.svg" alt="menu" /></button>
+      </div>
+    </header>
+    <main class="flex flex-col flex-1" x-init="$watch('saldo, dataKas', v => storeLaci(v))">
+      <template x-if="!hitungMode">
+        <section class="p-3 pt-2 text-center text-2xl">
+          <h1 class="rounded-lg bg-blek text-white w-full p-8 font-bold" x-text="format(total())">Rp0</h1>
+        </section>
+      </template>
+      <template x-if="hitungMode">
+        <section class="p-3 pt-2 text-center text-white">
+          <div class="rounded-lg w-full p-8 text-l bg-blek flex flex-col gap-3">
+            <div class="flex place-content-between items-center h-8">
+              <h1>Data Kas</h1>
+              <div class="flex place-content-end gap-2 w-1/2" x-show="editKas">
+                <input oninput="this.value=this.value.replace(/\./g, '')" class="font-bold bg-white text-right text-laci border-0 rounded focus:shadow-transparent focus:ring-0 py-1 px-2 text-l w-full" type="number" x-model="dataKas" x-on:blur="editKas = !editKas" x-ref="kas" />
+                <!-- <button class="bg-laci text-white rounded px-3" @click="editKas = !editKas">OK</button> -->
+              </div>
+              <div class="flex items-center gap-2 cursor-text" @click="showEditKas()" x-show="!editKas">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+                  <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z" />
+                </svg>
+                <h1 x-text="format(dataKas)" class="font-bold"></h1>
+              </div>
+            </div>
+            <div class="flex place-content-between border-b-2 border-laci pb-4">
+              <h1>Total Laci</h1>
+              <h1 x-text="format(total())" class="font-bold"></h1>
+            </div>
+            <div class="flex place-content-between">
+              <h1>Selisih</h1>
+              <div class="flex items-center font-bold gap-2">
+                <h1 x-text="selisih() === 0 ? '0 👌' : selisih() >= 0 ? '+' : '-'"></h1>
+                <h1 x-text="selisih() ? format(Math.abs(selisih())) : ''"></h1>
+              </div>
+            </div>
+          </div>
+        </section>
+      </template>
+      <section class="p-3 gap-2 flex flex-col">
+        <template x-for="(satuan, index) in saldo">
+          <div class="flex justify-between items-center">
+            <div class="flex gap-2">
+              <img :src="`./src/duit/${index}.png`" :alt="index" />
+              <div class="flex">
+                <button class="rounded bg-laci w-8 h-8 text-white active:scale-90" @click="sub($event.target)">-</button>
+                <!-- <input class="min-w-[10px] h-8 p-0" type="text"> -->
+                <div class="grid items-center justify-center text-blek w-16">
+                  <p x-text="satuan[0]"></p>
+                </div>
+                <button class="rounded bg-laci w-8 h-8 text-white active:scale-90" @click="add($event.target)">+</button>
+              </div>
+            </div>
+            <h2 class="text-blek" x-text="format(satuan[0] * satuan[1])">Rp0</h2>
+          </div>
+        </template>
+      </section>
+    </main>
+    <div class="footer text-center text-white text-sm w-full bg-blek p-3" title="19 Sep 2022, 22:32 GMT+7">
+      created with
+      <span class="text-laci">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="inline" viewBox="0 0 16 16">
+          <path d="M4 1c2.21 0 4 1.755 4 3.92C8 2.755 9.79 1 12 1s4 1.755 4 3.92c0 3.263-3.234 4.414-7.608 9.608a.513.513 0 0 1-.784 0C3.234 9.334 0 8.183 0 4.92 0 2.755 1.79 1 4 1z" />
+        </svg>
+      </span>
+      by
+      <span class="text-laci"><a href="https://afarhansib.github.io/">afarhansib</a></span>
+    </div>
+
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <script>
+      const formatter = new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+
+        // These options are needed to round to whole numbers if that's what you want.
+        minimumFractionDigits: 0 // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
+        //maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
+      });
+      document.addEventListener("alpine:init", () => {
+        Alpine.data("app", () => ({
+          saldo: {
+            "100k": [0, 100000],
+            "50k": [0, 50000],
+            "20k": [0, 20000],
+            "10k": [0, 10000],
+            "5k": [0, 5000],
+            "2k": [0, 2000],
+            "1k": [0, 1000],
+            "10rt": [0, 1000],
+            "5rt": [0, 500],
+            "2rt": [0, 200],
+            "1rt": [0, 100]
+          },
+          hitungMode: true,
+          dataKas: null,
+          editKas: false,
+          add(e) {
+            this.saldo[e.parentElement.previousElementSibling.getAttribute("alt")][0]++;
+          },
+          sub(e) {
+            if (this.saldo[e.parentElement.previousElementSibling.getAttribute("alt")][0] > 0) {
+              this.saldo[e.parentElement.previousElementSibling.getAttribute("alt")][0]--;
+            }
+          },
+          format(e) {
+            return formatter.format(e).replace(/\s/g, "");
+          },
+          total() {
+            let sum = 0;
+            for (e in this.saldo) {
+              sum += this.saldo[e][0] * this.saldo[e][1];
+            }
+            return sum;
+          },
+          selisih() {
+            return (this.dataKas - this.total()) * -1;
+          },
+          showEditKas() {
+            this.editKas = !this.editKas;
+            this.$nextTick(() => {
+              this.$refs.kas.focus();
+            });
+          },
+          storeLaci(v) {
+            localStorage.setItem("data-laci", JSON.stringify([this.dataKas, this.saldo]));
+          },
+          retrieveLaci() {
+            [this.dataKas, this.saldo] = JSON.parse(localStorage.getItem("data-laci"));
+          }
+        }));
+      });
+    </script>
+  </body>
+</html>
