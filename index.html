@@ -36,6 +36,7 @@
         margin: 0;
         -moz-appearance: textfield !important;
       }
+      [x-cloak] { display: none !important; }
     </style>
   </head>
 
@@ -46,8 +47,9 @@
         <p class="text-xl font-bold text-blek">Laci</p>
       </div>
       <div class="flex mr-3">
-        <button class="rounded px-3 mr-3 active:scale-90" :class="hitungMode ? 'text-white bg-laci' : 'text-laci bg-white ring-2 ring-laci ring-inset'" @click="hitungMode = !hitungMode">hitung</button>
-        <button class="active:scale-90"><img class="w-8 h-8" src="./src/icon-menu.svg" alt="menu" /></button>
+        <button class="h-8 rounded px-3 mr-3 active:scale-90" :class="hitungMode ? 'text-white bg-laci' : 'text-laci bg-white ring-2 ring-laci ring-inset'" @click="hitungMode = !hitungMode">hitung</button>
+        <!-- <button class="active:scale-90"><img class="w-8 h-8" src="./src/icon-menu.svg" alt="menu" /></button> -->
+        <button class="h-8 text-laci px-3 active:scale-90" @click="resetBtn">reset</button>
       </div>
     </header>
     <main class="flex flex-col flex-1" x-init="$watch('saldo, dataKas', v => storeLaci(v))">
@@ -104,6 +106,9 @@
           </div>
         </template>
       </section>
+      <!-- <section class="flex justify-center mt-6">
+        <button class="text-laci bg-white ring-2 active:scale-90 ring-laci ring-inset px-3 rounded py-1">reset</button>
+      </section> -->
     </main>
     <div class="footer text-center text-white text-sm w-full bg-blek p-3" title="19 Sep 2022, 22:32 GMT+7">
       created with
@@ -114,6 +119,16 @@
       </span>
       by
       <span class="text-laci"><a href="https://afarhansib.github.io/">afarhansib</a></span>
+    </div>
+    <div id="modal" class="fixed inset-0 flex items-center" :class="modalShown ? '' : 'pointer-events-none'">
+      <div class="bg-black bg-opacity-30 absolute inset-0" @click="modalShown = false" x-cloak x-show="modalShown" x-transition.opacity></div>
+      <div class="bg-white inset-x-0 m-4 p-5 absolute rounded-lg" x-cloak x-show="modalShown" x-transition>
+        <p class="mb-5">apakah anda yakin untuk reset?</p>
+        <div class="flex justify-end gap-3">
+          <button class="active:scale-90 text-laci px-3" @click="modalShown = false">batal</button>
+          <button class="active:scale-90 text-white bg-laci rounded px-3 h-8" @click="resetAll">reset</button>
+        </div>
+      </div>
     </div>
 
     <script src="https://unpkg.com/alpinejs" defer></script>
@@ -142,6 +157,7 @@
             "1rt": [0, 100]
           },
           hitungMode: true,
+          modalShown: false,
           dataKas: null,
           editKas: false,
           add(e) {
@@ -176,6 +192,16 @@
           },
           retrieveLaci() {
             [this.dataKas, this.saldo] = JSON.parse(localStorage.getItem("data-laci"));
+          },
+          resetBtn() {
+            this.modalShown = true
+          },
+          resetAll() {
+            this.dataKas = 0
+            for(let a in this.saldo) {
+              this.saldo[a][0] = 0
+            }
+            this.modalShown = false
           }
         }));
       });
